@@ -122,7 +122,7 @@ class mSpreadSheet_i (SpreadSheet__POA.mSpreadSheet):
     # @param c 列番号
     # @param sn シート名
     # @param v 設定する値
-    ##
+    #
     def set_value(self, l, c, sn, v):
         guard = OpenRTM_aist.ScopedLock(self.m_comp._mutex)
         try:
@@ -234,12 +234,36 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     
     return
 
+    ##
+    # @brief セルの文字列を取得
+    # @param self 
+    # @param l 行番号
+    # @param c 列番号
+    # @param sn シート名
+    # @return セルの文字列
+    #
   def get_string(self, l, c, sn):
     return ""
 
+    ##
+    # @brief セルの値を設定
+    # @param self 
+    # @param l 行番号
+    # @param c 列番号
+    # @param sn シート名
+    # @param v 設定する値
+    #
   def set_value(self, l, c, sn, v):
     pass
-  
+
+    ##
+    # @brief セルの文字列を設定
+    # @param self 
+    # @param l 行番号
+    # @param c 列番号
+    # @param sn シート名
+    # @param v 設定する文字列
+    #
   def set_string(self, l, c, sn, v):
     pass
     
@@ -583,12 +607,25 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     
     return RTC.RTC_OK
 
+    ##
+    # @brief 画面の更新停止
+    # @param self 
+    # 
   def addActionLock(self):
     pass
 
+    ##
+    # @brief 画面の更新再開
+    # @param self 
+    # 
   def removeActionLock(self):
     pass
 
+    ##
+    # @brief データポートと関連付けしてあるセルの色を設定
+    # @param self 
+    # @param op データポートオブジェクト
+    #  
   def setCellColor(self, op):
     pass
   

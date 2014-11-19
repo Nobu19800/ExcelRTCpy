@@ -593,20 +593,82 @@ class ExcelControl(CalcControl):
         #self.m_excel.closeCom()
 
 
+    ##
+    # @brief セルの文字列を取得
+    # @param self 
+    # @param l 行番号
+    # @param c 列番号
+    # @param sn シート名
+    # @return セルの文字列
+    #
+  def get_string(self, l, c, sn):
+    cell,sheet,m_len = self.m_excel.getCell(c, l, sn, "")
+    if cell and m_len == 1:
+      return str(cell.Value2)
+    elif cell:
+      return str(cell.Value2)
+    else:
+      return ""
+    
+    
+    ##
+    # @brief セルの値を設定
+    # @param self 
+    # @param l 行番号
+    # @param c 列番号
+    # @param sn シート名
+    # @param v 設定する値
+    #
+  def set_value(self, l, c, sn, v):
+    cell,sheet,m_len = self.m_excel.getCell(c, l, sn, "")
+    if cell:
+      cell.Value2 = v
+
+
+    ##
+    # @brief セルの文字列を設定
+    # @param self 
+    # @param l 行番号
+    # @param c 列番号
+    # @param sn シート名
+    # @param v 設定する文字列
+    #
+  def set_string(self, l, c, sn, v):
+    cell,sheet,m_len = self.m_excel.getCell(c, l, sn, "")
+    if cell:
+      cell.Value2 = v
+
+    ##
+    # @brief 画面の更新停止
+    # @param self 
+    # 
   def addActionLock(self):
     return
     """tid = str(thread.get_ident())
     self.m_excel.comObjects[tid].xlApplication.ScreenUpdating = False"""
 
+    ##
+    # @brief 画面の更新再開
+    # @param self 
+    # 
   def removeActionLock(self):
     return
     """tid = str(thread.get_ident())
     self.m_excel.comObjects[tid].xlApplication.ScreenUpdating = True"""
 
+    ##
+    # @brief データポートと関連付けしてあるセルの色を設定
+    # @param self 
+    # @param op データポートオブジェクト
+    #  
   def setCellColor(self, op):
     pass
 
-
+  ##
+  # @brief 初期化処理用コールバック関数
+  # @param self 
+  # @return RTC::ReturnCode_t
+  #
   def onInitialize(self):
     CalcControl.onInitialize(self)
     
@@ -614,12 +676,16 @@ class ExcelControl(CalcControl):
     
     return RTC.RTC_OK
     
-  
+  ##
+  # @brief 活性化時のコールバック関数
+  # @param self 
+  # @param ec_id target ExecutionContext Id
+  # @return RTC::ReturnCode_t
   def onActivated(self, ec_id):
     
     #self.m_excel.initCom()
     
-    CalcControl.onActivated(self, ec_id)
+    #CalcControl.onActivated(self, ec_id)
     
     
 
@@ -630,6 +696,11 @@ class ExcelControl(CalcControl):
     
     return RTC.RTC_OK
 
+  ##
+  # @brief 不活性化時のコールバック関数
+  # @param self 
+  # @param ec_id target ExecutionContext Id
+  # @return RTC::ReturnCode_t
   def onDeactivated(self, ec_id):
     
     CalcControl.onDeactivated(self, ec_id)
@@ -667,7 +738,10 @@ class ExcelControl(CalcControl):
 
 
   
-  
+ ##
+# @class ExcelComObject
+# @brief 
+# 
 class ExcelComObject:
    def __init__(self,xlApplication,xlWorkbooks,xlWorkbook,xlWorksheets,xlWorksheet):  
       self.xlApplication = xlApplication
@@ -1012,6 +1086,8 @@ def MyModuleInit(manager):
                             OpenRTM_aist.Delete)
     comp = manager.createComponent("ExcelControl")
 
+##
+# @brief 
 def main():
     """m_excel = ExcelObject()
     m_excel.Open("")
