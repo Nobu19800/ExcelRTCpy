@@ -220,6 +220,12 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     self.c_move = [1]
     self.Attach_Port = ["None"]
 
+    
+    self.stime = [0.01]
+    self.stCell_row = ["A"]
+    self.stCell_col = [1]
+    self.stCell_sheetname = ["sheet1"]
+
     self._mutex = threading.RLock()
     self.guard = None
 
@@ -230,6 +236,10 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     self.m_CalcOutPort = CalcDataPort.CalcOutPort
     self.m_CalcOutPortSeq = CalcDataPort.CalcOutPortSeq
     self.m_CalcOutPortEx = CalcDataPort.CalcOutPortEx
+
+    self.m_time = 0
+
+    
     
     
     return
@@ -599,6 +609,11 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     self.bindParameter("Blue", self.blue, "0")
     self.bindParameter("c_move", self.c_move, "1")
     self.bindParameter("Attach_Port", self.Attach_Port, "None")
+    self.bindParameter("stime", self.stime, "0.01")
+    self.bindParameter("stCell_row", self.stCell_row, "A")
+    self.bindParameter("stCell_col", self.stCell_col, "1")
+    self.bindParameter("stCell_sheetname", self.stCell_sheetname, "sheet1")
+    
     
     
     
@@ -661,15 +676,23 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
 
     for n,op in self.ConfOutPorts.items():
         op._num = int(op._col)
+        op.count = 0
 
     for n,ip in self.ConfInPorts.items():
         ip._num = int(ip._col)
+        ip.count = 0
 
     for n,op in self.OutPorts.items():
         op._num = int(op._col)
+        op.count = 0
 
     for n,ip in self.InPorts.items():
         ip._num = int(ip._col)
+        ip.count = 0
+
+    self.m_time = 0
+
+    
     
     return RTC.RTC_OK
 
@@ -718,7 +741,8 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
       self.udAPort(ip, self.ConfOutPorts, self.ConfInPorts)
      
       
-
+  def setTime(self):
+    pass
 
   ##
   # @brief 周期処理用コールバック関数
@@ -733,24 +757,28 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     self.guard = OpenRTM_aist.ScopedLock(self._mutex)
 
     try:
-        if int(self.actionLock[0]) == 1:
+        if int(self.actionLock[0]) != 0:
             
             self.addActionLock()
             
 
         
 
+        self.setTime()
 
-
-        for n,op in self.ConfOutPorts.items():
-            if len(op.attachports) == 0:
-                op.putData(self)
+        
                 
         for n,ip in self.ConfInPorts.items():
             if len(ip.attachports) == 0:
                 ip.putData(self)
 
+        for n,ip in self.InPorts.items():
+            if len(ip.attachports) == 0:
+                ip.putData(self)
+                
 
+        if int(self.actionLock[0]) == 2:
+            self.removeActionLock()
                 
         
         for n,op in self.OutPorts.items():
@@ -758,9 +786,11 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
             if len(op.attachports) == 0:
                 op.putData(self)
                 
-        for n,ip in self.InPorts.items():
-            if len(ip.attachports) == 0:
-                ip.putData(self)
+        
+
+        for n,op in self.ConfOutPorts.items():
+            if len(op.attachports) == 0:
+                op.putData(self)
 
 
                 
@@ -775,6 +805,8 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
         pass
         
     del self.guard
+
+    self.m_time += self.stime[0]
 
     
     

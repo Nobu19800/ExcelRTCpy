@@ -3,7 +3,7 @@
 
 ##
 #   @file ExcelRTC.py
-#   @brief PortPointControl Component
+#   @brief ExcelControl Component
 
 import win32com
 import pythoncom
@@ -55,13 +55,51 @@ excelcontrol_spec = ["implementation_id", "ExcelControl",
                   "language",          "Python",
                   "lang_type",         "script",
                   "conf.default.file_path", "NewFile",
-                  "conf.default.SlideNumberInRelative", "1",
-                  "conf.default.SlideFileInitialNumber", "0",
+                  "conf.default.actionLock", "1",
+                  "conf.default.red", "255",
+                  "conf.default.green", "255",
+                  "conf.default.blue", "0",
+                  "conf.default.stime", "0.01",
+                  "conf.default.stCell_row", "A",
+                  "conf.default.stCell_col", "1",
+                  "conf.default.stCell_sheetname", "Sheet1",
+                  "conf.dataport0.port_type", "DataInPort",
+                  "conf.dataport0.data_type", "TimedFloat",
+                  "conf.dataport0.column", "1",
+                  "conf.dataport0.start_row", "A",
+                  "conf.dataport0.end_row", "A",
+                  "conf.dataport0.sheetname", "sheet1",
+                  "conf.dataport0.c_move", "1",
+                  "conf.dataport0.Attach_Port", "None",
+                  "conf.__widget__.actionLock", "radio",
+                  "conf.__widget__.red", "spin",
+                  "conf.__widget__.green", "spin",
+                  "conf.__widget__.blue", "spin",
                   "conf.__widget__.file_path", "text",
-                  "conf.__widget__.SlideNumberInRelative", "radio",
-                  "conf.__widget__.SlideFileInitialNumber", "spin",
-                  "conf.__constraints__.SlideNumberInRelative", "(0,1)",
-                  "conf.__constraints__.SlideFileInitialNumber", "0<=x<=1000",
+                  "conf.__widget__.port_type", "radio",
+                  "conf.__widget__.column", "spin",
+                  "conf.__widget__.start_row", "text",
+                  "conf.__widget__.end_row", "text",
+                  "conf.__widget__.sheetname", "text",
+                  "conf.__widget__.data_type", "radio",
+                  "conf.__widget__.c_move", "radio",
+                  "conf.__widget__.Attach_Port", "text",
+                  "conf.__widget__.stCell_col", "spin",
+                  "conf.__constraints__.actionLock", "(0,1,2)",
+                  "conf.__constraints__.red", "0<=x<=255",
+                  "conf.__constraints__.green", "0<=x<=255",
+                  "conf.__constraints__.blue", "0<=x<=255",
+                  "conf.__constraints__.column", "1<=x<=1000",
+                  "conf.__constraints__.stCell_col", "1<=x<=1000",
+                  "conf.__constraints__.port_type", "(DataInPort,DataOutPort)",
+                  "conf.__constraints__.data_type", """(TimedDouble,TimedLong,TimedFloat,TimedShort,TimedULong,TimedUShort,TimedChar,TimedWChar,
+                                                    TimedBoolean,TimedOctet,TimedString,TimedWString,TimedDoubleSeq,TimedLongSeq,TimedFloatSeq,
+                                                    TimedShortSeq,TimedULongSeq,TimedUShortSeq,TimedCharSeq,TimedWCharSeq,TimedOctetSeq,TimedStringSeq,
+                                                    TimedWStringSeq,TimedRGBColour,TimedPoint2D,TimedVector2D,TimedPose2D,TimedVelocity2D,TimedAcceleration2D,
+                                                    TimedPoseVel2D,TimedSize2D,TimedGeometry2D,TimedCovariance2D,TimedPointCovariance2D,TimedCarlike,TimedSpeedHeading2D,
+                                                    TimedPoint3D,TimedVector3D,TimedOrientation3D,TimedPose3D,TimedVelocity3D,TimedAngularVelocity3D,TimedAcceleration3D,
+                                                    TimedAngularAcceleration3D,TimedPoseVel3D,TimedSize3D,TimedGeometry3D,TimedCovariance3D,TimedSpeedHeading3D,TimedOAP)""",
+                  "conf.__constraints__.c_move", "(0,1)",
                   ""]
 
 
@@ -273,10 +311,37 @@ class ExcelInPort(CalcDataPort.CalcInPort, ExcelPortObject):
     def updateIn(self, b, m_cal):
         cell, sheet, m_len = self.getCell(m_cal)
         if cell != None:
-              
-          cell.Value2 = b
           if self.state:
+            cell.Value2 = b
             self._num = self._num + 1
+          else:
+            m_string = CalcDataPort.DataType.String
+            m_value = CalcDataPort.DataType.Value
+            if self._dataType[2] == m_value:
+              db = 0
+              if self.count != 0:
+                if  self._length == "":
+                  db = (b - cell.Value2)/m_cal.stime[0]
+                else:
+                  db = (b - cell.Value2[0][0])/m_cal.stime[0]
+                
+              celld, sheetd, m_lend = m_cal.m_excel.getCell(self._num+1, self._row, self._sn, "")
+              celld.Value2 = db
+              
+              cellf, sheetf, m_lenf = m_cal.m_excel.getCell(self._num+2, self._row, self._sn, "")
+              
+              fb = b*m_cal.stime[0]
+              
+              if self.count != 0:
+                fb = cellf.Value2 + b*m_cal.stime[0]
+                
+                
+              
+              
+              cellf.Value2 = fb
+              
+            cell.Value2 = b
+            self.count += 1
 
 
         
@@ -319,22 +384,75 @@ class ExcelInPortSeq(CalcDataPort.CalcInPortSeq, ExcelPortObject):
     def update_cellNameSub(self, cell, m_len):
         CalcDataPort.CalcInPortSeq.update_cellNameSub(self, cell, m_len)
 
+
     ##
     # @brief 
     # @param self 
     # @param cell セルオブジェクト
     # @param b データ
     def updateIn(self, b, m_cal):
+            
         cell, sheet, m_len = self.getCell(m_cal)
         if cell != None:
           v = []
           for j in range(0, len(b)):
             if m_len > j:
               v.append(b[j])
-              
-          cell.Value2 = v
+
           if self.state:
+              cell.Value2 = v
               self._num = self._num + 1
+          else:
+            m_string = CalcDataPort.DataType.String
+            m_value = CalcDataPort.DataType.Value
+
+            if self._dataType[2] == m_value:
+              if  self._length == "":
+                db = 0
+                
+                if self.count != 0:
+                  db = (v[0] - cell.Value2)/m_cal.stime[0]
+                  
+                celld, sheetd, m_lend = m_cal.m_excel.getCell(self._num+1, self._row, self._sn, "")
+                celld.Value2 = db
+                
+                cellf, sheetf, m_lenf = m_cal.m_excel.getCell(self._num+2, self._row, self._sn, "")
+                
+                fb = v[0]*m_cal.stime[0]
+                
+                if self.count != 0:
+                  fb = cellf.Value2 + v[0]*m_cal.stime[0]
+ 
+                cellf.Value2 = fb
+              else:
+                db = []
+                tv2 = cell.Value2[0]
+                for i in range(0, len(v)):
+                  if self.count != 0:
+                    db.append((v[i] - tv2[i])/m_cal.stime[0])
+                  else:
+                    db.append(0)
+
+                celld, sheetd, m_lend = m_cal.m_excel.getCell(self._num+1, self._row, self._sn, self._length)
+                celld.Value2 = db
+
+                cellf, sheetf, m_lenf = m_cal.m_excel.getCell(self._num+2, self._row, self._sn, self._length)
+
+                fb = []
+                tv3 = cellf.Value2[0]
+                for i in range(0, len(v)):
+                  if self.count != 0:
+                    fb.append(tv3[i] + v[i]*m_cal.stime[0])
+                  else:
+                    fb.append(v[i]*m_cal.stime[0])
+                    
+                cellf.Value2 = fb
+                  
+              cell.Value2 = v
+              self.count += 1
+              
+          
+          
         
 ##
 # @class ExcelInPortEx
@@ -708,6 +826,11 @@ class ExcelControl(CalcControl):
     #self.file.close()
     return RTC.RTC_OK
 
+  def setTime(self):
+    try:
+      self.set_value(self.stCell_row[0], self.stCell_col[0], self.stCell_sheetname[0], self.m_time)
+    except:
+      pass
 
   ##
   # @brief 周期処理用コールバック関数

@@ -320,6 +320,8 @@ class CalcPortObject:
         self.state = mstate
         self._col = col
 
+        self.count = 0
+
         self._mutex = threading.RLock()
 
     ##
