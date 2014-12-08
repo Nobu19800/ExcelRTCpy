@@ -127,14 +127,14 @@ class MainWindow(QtGui.QMainWindow):
         self.infotextBox = QtGui.QLineEdit()
         self.m_layout.addWidget(self.infotextBox)
         
-        self.collabel = QtGui.QLabel(u"列番号")
+        self.collabel = QtGui.QLabel(u"行番号")
         self.m_layout.addWidget(self.collabel)
 
         self.coltextBox = QtGui.QLineEdit()
         self.m_layout.addWidget(self.coltextBox)
         self.coltextBox.setText("2")
 
-        self.rawlabel = QtGui.QLabel(u"行番号")
+        self.rawlabel = QtGui.QLabel(u"列番号")
         self.m_layout.addWidget(self.rawlabel)
 
         self.sub_m_layout = QtGui.QHBoxLayout()
@@ -166,11 +166,11 @@ class MainWindow(QtGui.QMainWindow):
         self.m_layout.addWidget(self.namingServerButton)
         self.namingServerButton.clicked.connect(self.namingServerSlot)
 
-        self.resetButton = QtGui.QPushButton(u"列番号初期化")
+        self.resetButton = QtGui.QPushButton(u"行番号初期化")
         self.m_layout.addWidget(self.resetButton)
         self.resetButton.clicked.connect(self.resetSlot)
 
-        self.allResetButton = QtGui.QPushButton(u"全ての列番号を初期化")
+        self.allResetButton = QtGui.QPushButton(u"全ての行番号を初期化")
         self.m_layout.addWidget(self.allResetButton)
         self.allResetButton.clicked.connect(self.allResetSlot)
 
