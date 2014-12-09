@@ -6,6 +6,7 @@
 
 from PyQt4 import QtCore, QtGui
 import OOoRTC
+import CalcDataPort
 
 import optparse
 import sys,os,platform
@@ -89,6 +90,8 @@ class MainWindow(QtGui.QMainWindow):
         self.selItem = None
 
         
+
+        
         self.layout = QtGui.QHBoxLayout()
 
 
@@ -153,8 +156,7 @@ class MainWindow(QtGui.QMainWindow):
         self.m_layout.addWidget(self.sheetlabel)
 
         self.sheetcomboBox = QtGui.QComboBox()
-        self.m_layout.addWidget(self.sheetcomboBox)
-        
+        self.m_layout.addWidget(self.sheetcomboBox)   
         self.naneServerlabel = QtGui.QLabel(u"ネームサーバーのアドレス")
         self.m_layout.addWidget(self.naneServerlabel)
 
@@ -208,7 +210,24 @@ class MainWindow(QtGui.QMainWindow):
         self.r_layout.addWidget(self.rowcheckBox)
         self.rowcheckBox.setCheckState(QtCore.Qt.Checked)
 
+        self.datatypelabel = QtGui.QLabel(u"データ型")
+        self.r_layout.addWidget(self.datatypelabel)
+
+        self.datatypecomboBox = QtGui.QComboBox()
+        self.r_layout.addWidget(self.datatypecomboBox)
+        
+        self.datatypecomboBox.addItem(u"")
+        for d in CalcDataPort.DataType.DataTypeList:
+            self.datatypecomboBox.addItem(d.decode("utf-8"))
+
+        
+        self.porttypecomboBox = QtGui.QComboBox()
+        self.r_layout.addWidget(self.porttypecomboBox)
+        self.porttypecomboBox.addItem(u"DataInPort")
+        self.porttypecomboBox.addItem(u"DataOutPort")
+
         self.layout.addLayout(self.r_layout)
+        
         
 
         #Button1.clicked.connect(SetButton)
@@ -241,6 +260,7 @@ class MainWindow(QtGui.QMainWindow):
     # @param self 
     #
     def treeWidgetSlot(self, obj):
+        self.datatypecomboBox.setCurrentIndex(0)
         self.selItem = self.getTreeNode(obj)
         
         t_comp, nd = OOoRTC.JudgePort(self, self._paths)
@@ -278,7 +298,14 @@ class MainWindow(QtGui.QMainWindow):
     
     
         self.sheetcomboBox.setCurrentIndex(self.sheetcomboBox.findText(m_port._sn))
-    
+
+        
+        if len(m_port._port_a[0]) == 2:
+            self.datatypecomboBox.setCurrentIndex(self.datatypecomboBox.findText(m_port._port_a[1]))
+            self.porttypecomboBox.setCurrentIndex(self.porttypecomboBox.findText(m_port._port_a[0][0]))
+        else:
+            self.datatypecomboBox.setCurrentIndex(0)
+        
     
         self.rawtextBox.setText(m_port._row)
 
@@ -320,9 +347,11 @@ class MainWindow(QtGui.QMainWindow):
     # @param self 
     # @param name データポート名
     # @param i_port 接続するデータポート
-    def compAddOutPort(self, name, i_port):
+    def compAddOutPort(self, name, i_port, autoCon = True):
         row = str(self.rawtextBox.text().toLocal8Bit())
         sn = str(self.sheetcomboBox.currentText().toLocal8Bit())
+        if sn == "":
+            return False
         col = str(self.coltextBox.text().toLocal8Bit())
         
         mlen = str(self.lentextBox.text().toLocal8Bit())
@@ -331,18 +360,22 @@ class MainWindow(QtGui.QMainWindow):
         mst = True
         if mstate == QtCore.Qt.Unchecked:
             mst = False
-        tcomp = self.rtc.mAddOutPort(name, i_port, row, col, mlen, sn, mst, {})
+        tcomp = self.rtc.mAddOutPort(name, i_port, row, col, mlen, sn, mst, {}, autoCon)
         if tcomp:
             tcomp.update_cellName(self.rtc)
+        return True
 
     ##
     # @brief インポートを追加する関数
     # @param self 
     # @param name データポート名
     # @param o_port 接続するデータポート
-    def compAddInPort(self, name, o_port):
+    def compAddInPort(self, name, o_port, autoCon = True):
         row = str(self.rawtextBox.text().toLocal8Bit())
+        
         sn = str(self.sheetcomboBox.currentText().toLocal8Bit())
+        if sn == "":
+            return False
         col = str(self.coltextBox.text().toLocal8Bit())
         
         mlen = str(self.lentextBox.text().toLocal8Bit())
@@ -351,9 +384,10 @@ class MainWindow(QtGui.QMainWindow):
         mst = True
         if mstate == QtCore.Qt.Unchecked:
             mst = False
-        tcomp = self.rtc.mAddInPort(name, o_port, row, col, mlen, sn, mst, {})
+        tcomp = self.rtc.mAddInPort(name, o_port, row, col, mlen, sn, mst, {}, autoCon)
         if tcomp:
             tcomp.update_cellName(self.rtc)
+        return True
 
     ##
     # @brief 作成したポートの設定を保存する関数
@@ -385,13 +419,16 @@ class MainWindow(QtGui.QMainWindow):
                 cell,sheet,m_len = self.rtc.m_excel.getCell(i,"G",'保存用',"",False)
                 cell.Value2 = ''
 
-                
+           
         count = 1
         PortList = []
+        
         for n,o in self.rtc.OutPorts.items():
             PortList.append(o)
         for n,i in self.rtc.InPorts.items():
+            
             PortList.append(i)
+        
 
         
 
@@ -441,6 +478,51 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return
 
+    
+    def loadParam(self, count):
+        cell,sheet,m_len = self.rtc.m_excel.getCell(count,"B",'保存用',"",False)
+        if cell.Value2 == None:
+            row = "A"
+        row = cell.Value2
+                    
+                    
+        cell,sheet,m_len = self.rtc.m_excel.getCell(count,"C",'保存用',"",False)
+        if cell.Value2 == None:
+            col = 1
+        col = int(cell.Value2)
+
+        cell,sheet,m_len = self.rtc.m_excel.getCell(count,"D",'保存用',"",False)
+        if cell.Value2 == None:
+            mlen = ""
+        else:
+            mlen = cell.Value2
+
+        cell,sheet,m_len = self.rtc.m_excel.getCell(count,"E",'保存用',"",False)
+        if cell.Value2 == None:
+            sn = "Sheet1"
+        sn = cell.Value2
+
+        cell,sheet,m_len = self.rtc.m_excel.getCell(count,"F",'保存用',"",False)
+        
+                    
+        if str(cell.Value2) == "True":
+            mstate = True
+        else:
+            mstate = False
+
+        cell,sheet,m_len = self.rtc.m_excel.getCell(count,"G",'保存用',"",False)
+
+
+        t_attachports = {}
+        if cell.Value2:
+            tmp = re.split(':',cell.Value2)
+                        
+            for pp in tmp:
+                if pp != "":
+                    t_attachports[pp] = pp
+
+        return row,col,mlen,sn,mstate,t_attachports
+
     ##
     # @brief 読み込んだ保存用シートからポートを作成する関数
     # self 
@@ -464,77 +546,46 @@ class MainWindow(QtGui.QMainWindow):
             m_name = re.split(':',cell.Value2)
             
             
-
             if len(m_name) < 2:
                 return
 
-            if m_hostname == m_name[1]:
-                pass
+            if len(m_name) == 2:
+                for dn in CalcDataPort.DataType.DataTypeList:
+                    if m_name[1] == dn:
+                        m_name[1] = dn
+                #m_name[1] = m_name[1].decode("cp932").encode("utf-8")
+                F_Name = m_name[1] + str(OpenRTM_aist.uuid1())
+                row,col,mlen,sn,mstate,t_attachports = self.loadParam(count)
+                if m_name[0] == 'DataInPort':
+                    self.rtc.mAddInPort(F_Name, [[m_name[0],m_name[1]],m_name[1]], row, col, mlen, sn, mstate, t_attachports, False)
+                elif m_name[0] == 'DataOutPort':
+                    self.rtc.mAddOutPort(F_Name, [[m_name[0],m_name[1]],m_name[1]], row, col, mlen, sn, mstate, t_attachports, False)
             else:
-                _paths = OOoRTC.GetPathList(m_name[1], self.mgr, None)
-                m_hostname = m_name[1]
+                if m_hostname == m_name[1]:
+                    pass
+                else:
+                    _paths = OOoRTC.GetPathList(m_name[1], self.mgr, None)
+                    m_hostname = m_name[1]
 
-            
+                if _paths == None:
+                    return
 
-            if _paths == None:
-                return
-            
-            for p in _paths:
-                if p[0] == m_name:
-                    F_Name = p[0][-2] + p[0][-1]
-                    profile = p[1].get_port_profile()
-                    props = nvlist_to_dict(profile.properties)
+                for p in _paths:
+                    if p[0] == m_name:
+                        F_Name = p[0][-2] + p[0][-1]
+                        profile = p[1].get_port_profile()
+                        props = nvlist_to_dict(profile.properties)
 
-                    
-
-                    cell,sheet,m_len = self.rtc.m_excel.getCell(count,"B",'保存用',"",False)
-                    if cell.Value2 == None:
-                        return
-                    row = cell.Value2
-                    
-                    
-                    cell,sheet,m_len = self.rtc.m_excel.getCell(count,"C",'保存用',"",False)
-                    if cell.Value2 == None:
-                        return
-                    col = int(cell.Value2)
-
-                    cell,sheet,m_len = self.rtc.m_excel.getCell(count,"D",'保存用',"",False)
-                    if cell.Value2 == None:
-                        mlen = ""
-                    else:
-                        mlen = cell.Value2
-
-                    cell,sheet,m_len = self.rtc.m_excel.getCell(count,"E",'保存用',"",False)
-                    if cell.Value2 == None:
-                        return
-                    sn = cell.Value2
-
-                    cell,sheet,m_len = self.rtc.m_excel.getCell(count,"F",'保存用',"",False)
-                    if cell.Value2 == None:
-                        return
-                    
-                    if str(cell.Value2) == "True":
-                        mstate = True
-                    else:
-                        mstate = False
-
-                    cell,sheet,m_len = self.rtc.m_excel.getCell(count,"G",'保存用',"",False)
-
-
-                    t_attachports = {}
-                    if cell.Value2:
-                        tmp = re.split(':',cell.Value2)
                         
-                        for pp in tmp:
-                            if pp != "":
-                                t_attachports[pp] = pp
-                            
-                    
-                    if props['port.port_type'] == 'DataInPort':
-                        self.rtc.mAddOutPort(F_Name, p, row, col, mlen, sn, mstate, t_attachports)
-                    elif props['port.port_type'] == 'DataOutPort':
-                        self.rtc.mAddInPort(F_Name, p, row, col, mlen, sn, mstate, t_attachports)            
-                            
+
+                        row,col,mlen,sn,mstate,t_attachports = self.loadParam(count)
+                                
+                        
+                        if props['port.port_type'] == 'DataInPort':
+                            self.rtc.mAddOutPort(F_Name, p, row, col, mlen, sn, mstate, t_attachports)
+                        elif props['port.port_type'] == 'DataOutPort':
+                            self.rtc.mAddInPort(F_Name, p, row, col, mlen, sn, mstate, t_attachports)            
+    
             count = count + 1
                                 
 
@@ -609,9 +660,27 @@ class MainWindow(QtGui.QMainWindow):
         pn = str(self.portListcomboBox.currentText().toLocal8Bit())
         if self.rtc.InPorts.has_key(pn) == True:
             self.setPortParam(self.rtc.InPorts[pn])
+            self.updateSaveSheet()
             return
         elif self.rtc.OutPorts.has_key(pn) == True:
             self.setPortParam(self.rtc.OutPorts[pn])
+            self.updateSaveSheet()
+            return
+
+        dt = str(self.datatypecomboBox.currentText().toLocal8Bit())
+        if dt != "":
+            F_Name = dt + str(OpenRTM_aist.uuid1())
+            pt = str(self.porttypecomboBox.currentText().toLocal8Bit())
+            if pt == "DataOutPort":
+                if self.compAddOutPort(F_Name, [[pt,dt],dt], False):
+                    self.massageBoxFunc('',dt.decode("utf-8")+u"型のOutPortを作成しました。")
+            else:
+                if self.compAddInPort(F_Name, [[pt,dt],dt], False):
+                    self.massageBoxFunc('',dt.decode("utf-8")+u"型のInPortを作成しました。")
+
+            self.updateInPortList()
+            self.updateDataPortList()
+            self.updateSaveSheet()
             return
             
         t_comp, nd = OOoRTC.JudgePort(self, self._paths)
@@ -646,7 +715,8 @@ class MainWindow(QtGui.QMainWindow):
             self.updateDataPortList()
 
             self.massageBoxFunc('',t_comp[0][-2]+u"の"+t_comp[0][-1]+u"と通信するデータポートを作成しました。")
-                    
+
+        
         """print self.coltextBox.text()
         print self.rawtextBox.text()
         print self.lentextBox.text()
@@ -919,12 +989,12 @@ class MainWindow(QtGui.QMainWindow):
         if self.mgr != None:
             self.treeWidget.clear()
             self.treeNodeList = []
+            
             self.sheetcomboBox.clear()
             for i,j in self.rtc.m_excel.t_xlWorksheet.items():
                 self.sheetcomboBox.addItem(i.decode("utf-8"))
             if str(self.sheetcomboBox.currentText().toLocal8Bit()) == u"保存用".encode("cp932"):
                 self.sheetcomboBox.setCurrentIndex(1)
-            
             address = str(self.namingServertextBox.text())
             orb = self.mgr._orb
             namingserver = OOoRTC.SetNamingServer(address, orb, self.massageBoxFunc)

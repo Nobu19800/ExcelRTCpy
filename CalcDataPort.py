@@ -55,6 +55,14 @@ class DataType:
 
     String = 0
     Value = 1
+
+    DataTypeList = ["TimedDouble","TimedLong","TimedFloat","TimedShort","TimedULong","TimedUShort","TimedChar","TimedWChar",
+                        "TimedBoolean","TimedOctet","TimedString","TimedWString","TimedDoubleSeq","TimedLongSeq","TimedFloatSeq",
+                        "TimedShortSeq","TimedULongSeq","TimedUShortSeq","TimedCharSeq","TimedWCharSeq","TimedOctetSeq","TimedStringSeq",
+                        "TimedWStringSeq","TimedRGBColour","TimedPoint2D","TimedVector2D","TimedPose2D","TimedVelocity2D","TimedAcceleration2D",
+                        "TimedPoseVel2D","TimedSize2D","TimedGeometry2D","TimedCovariance2D","TimedPointCovariance2D","TimedCarlike","TimedSpeedHeading2D",
+                        "TimedPoint3D","TimedVector3D","TimedOrientation3D","TimedPose3D","TimedVelocity3D","TimedAngularVelocity3D","TimedAcceleration3D",
+                        "TimedAngularAcceleration3D","TimedPoseVel3D","TimedSize3D","TimedGeometry3D","TimedCovariance3D","TimedSpeedHeading3D","TimedOAP"]
     def __init__(self):
         pass
 
@@ -249,7 +257,7 @@ def GetDataSType(data_type):
         dt = RTC.TimedOAP(RTC.Time(0,0),RTC.OAP(RTC.Velocity3D(0,0,0,0,0,0),RTC.Velocity3D(0,0,0,0,0,0),RTC.Velocity3D(0,0,0,0,0,0)))
         return dt, [str, ext, m_value, data_type]
     else:
-        return None
+        return None, None
     
 
 ##

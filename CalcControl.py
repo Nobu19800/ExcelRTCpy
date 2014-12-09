@@ -221,7 +221,7 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     self.Attach_Port = ["None"]
 
     
-    self.stime = [0.01]
+    self.stime = [0.05]
     self.stCell_row = ["A"]
     self.stCell_col = [1]
     self.stCell_sheetname = ["sheet1"]
@@ -393,20 +393,28 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
   # @param mstate 列を移動するか
   # @param t_attachports 関連付けするデータポート
   # @return 追加したアウトポート
-  def mAddOutPort(self, name, m_inport, row, col, mlen, sn, mstate, t_attachports):
+  def mAddOutPort(self, name, m_inport, row, col, mlen, sn, mstate, t_attachports, autoCon = True):
 
     sig = CalcDataPort.DataType.Single
     sec = CalcDataPort.DataType.Sequence
     ext = CalcDataPort.DataType.Extend
+
+    m_data_o = None
+    m_data_type = None
     
-    m_data_o, m_data_type =  CalcDataPort.GetDataType(m_inport[1])
+    if autoCon:
+        m_data_o, m_data_type =  CalcDataPort.GetDataType(m_inport[1])
+    else:
+        m_data_o, m_data_type =  CalcDataPort.GetDataSType(m_inport[1])
     
 
     if m_data_o:
         
         m_outport = OpenRTM_aist.OutPort(name, m_data_o)
         self.addOutPort(name, m_outport)
-        OOoRTC.ConnectPort(m_inport[1], m_outport._objref, name)
+        
+        if autoCon:
+            OOoRTC.ConnectPort(m_inport[1], m_outport._objref, name)
 
         if m_data_type[1] == sig:
             self.OutPorts[name] = self.m_CalcOutPort(m_outport, m_data_o, name, row, col, mlen, sn, mstate, m_inport, m_data_type, t_attachports)
@@ -434,17 +442,26 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
   # @param t_attachports 関連付けするデータポート
   # @return 追加したインポート
         
-  def mAddInPort(self, name, m_outport, row, col, mlen, sn, mstate, t_attachports):
+  def mAddInPort(self, name, m_outport, row, col, mlen, sn, mstate, t_attachports, autoCon = True):
     sig = CalcDataPort.DataType.Single
     sec = CalcDataPort.DataType.Sequence
     ext = CalcDataPort.DataType.Extend
+
+
+    m_data_i = None
+    m_data_type = None
     
-    m_data_i, m_data_type =  CalcDataPort.GetDataType(m_outport[1])
+    if autoCon:
+        m_data_i, m_data_type =  CalcDataPort.GetDataType(m_outport[1])
+    else:
+        m_data_i, m_data_type =  CalcDataPort.GetDataSType(m_outport[1])
     
     if m_data_i:
         m_inport = OpenRTM_aist.InPort(name, m_data_i)
         self.addInPort(name, m_inport)
-        OOoRTC.ConnectPort(m_inport._objref, m_outport[1], name)
+
+        if autoCon:
+            OOoRTC.ConnectPort(m_inport._objref, m_outport[1], name)
 
         
         
@@ -609,7 +626,7 @@ class CalcControl(OpenRTM_aist.DataFlowComponentBase):
     self.bindParameter("Blue", self.blue, "0")
     self.bindParameter("c_move", self.c_move, "1")
     self.bindParameter("Attach_Port", self.Attach_Port, "None")
-    self.bindParameter("stime", self.stime, "0.01")
+    self.bindParameter("stime", self.stime, "0.05")
     self.bindParameter("stCell_row", self.stCell_row, "A")
     self.bindParameter("stCell_col", self.stCell_col, "1")
     self.bindParameter("stCell_sheetname", self.stCell_sheetname, "sheet1")
