@@ -448,8 +448,8 @@ class ExcelInPortSeq(CalcDataPort.CalcInPortSeq, ExcelPortObject):
                     
                 cellf.Value2 = fb
                   
-              cell.Value2 = v
-              self.count += 1
+            cell.Value2 = v
+            self.count += 1
               
           
           
