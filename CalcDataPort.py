@@ -728,9 +728,12 @@ class CalcPortObject:
             pass
         del guard
     
-        tms = len(tmbd)-1
+        #tms = len(tmbd)-1
         if self.state:
-            tms = 0
+            pass
+        else:
+            if len(tmbd) != 0:
+                tmbd = [tmbd[-1]]
         for b in tmbd:
             self.updateIn(b, m_cal)
 
