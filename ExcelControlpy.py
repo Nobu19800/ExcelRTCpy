@@ -2,8 +2,8 @@
 # -*- encoding: utf-8 -*-
 
 ##
-#   @file ExcelRTC.py
-#   @brief ExcelControl Component
+#   @file ExcelControlpy.py
+#   @brief ExcelControlpy Component
 
 
 
@@ -39,12 +39,12 @@ excel_comp = None
 
 
 
-excelcontrol_spec = ["implementation_id", "ExcelControl",
-                  "type_name",         "ExcelControl",
+excelcontrolpy_spec = ["implementation_id", "ExcelControlpy",
+                  "type_name",         "ExcelControlpy",
                   "description",       "Excel Component",
                   "version",           "0.1",
                   "vendor",            "Miyamoto Nobuhiko",
-                  "category",          "example",
+                  "category",          "Office",
                   "activity_type",     "DataFlowComponent",
                   "max_instance",      "10",
                   "language",          "Python",
@@ -631,7 +631,7 @@ class ExcelOutPortEx(CalcDataPort.CalcOutPortEx, ExcelPortObject):
 # @brief Excelを操作するためのRTCのクラス
 #
 
-class ExcelControl(CalcControl):
+class ExcelControlpy(CalcControl):
     ##
     # @brief コンストラクタ
     # @param self 
@@ -645,14 +645,14 @@ class ExcelControl(CalcControl):
 
     
     
-    prop = OpenRTM_aist.Manager.instance().getConfig()
+    """prop = OpenRTM_aist.Manager.instance().getConfig()
     fn = self.getProperty(prop, "excel.filename", "")
     self.m_excel = ExcelObject()
     if fn != "":
       str1 = [fn]
       OpenRTM_aist.replaceString(str1,"/","\\")
       fn = os.path.abspath(str1[0])
-    self.m_excel.Open(fn)
+    self.m_excel.Open(fn)"""
 
     self.conf_filename = ["NewFile"]
 
@@ -779,7 +779,21 @@ class ExcelControl(CalcControl):
   #
   def onInitialize(self):
     CalcControl.onInitialize(self)
+
+    self.bindParameter("file_path", self.conf_filename, "NewFile")
     
+    self._configsets.update("default","file_path")
+    self.m_excel = ExcelObject()
+    fn = self.conf_filename[0]
+    if fn == "NewFile":
+        fn = ""
+
+    if fn != "":
+      str1 = [fn]
+      OpenRTM_aist.replaceString(str1,"/","\\")
+      fn = os.path.abspath(str1[0])
+    
+    self.m_excel.Open(fn)
     
     
     return RTC.RTC_OK
@@ -858,11 +872,11 @@ class ExcelControl(CalcControl):
 # @brief
 # @param manager マネージャーオブジェクト
 def MyModuleInit(manager):
-    profile = OpenRTM_aist.Properties(defaults_str=excelcontrol_spec)
+    profile = OpenRTM_aist.Properties(defaults_str=excelcontrolpy_spec)
     manager.registerFactory(profile,
-                            ExcelControl,
+                            ExcelControlpy,
                             OpenRTM_aist.Delete)
-    comp = manager.createComponent("ExcelControl")
+    comp = manager.createComponent("ExcelControlpy")
 
 ##
 # @brief 
