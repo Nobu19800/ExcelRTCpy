@@ -3,6 +3,7 @@
 ##
 #
 # @file CalcDataPort.py
+# @brief 表計算ソフトのRTCのデータポート操作関連のクラス、関数
 
 import optparse
 import sys,os,platform
@@ -15,9 +16,9 @@ sv = sys.version_info
 
 if os.name == 'posix':
     home = expanduser("~")
-    sys.path += [home+'/OOoRTC', '/usr/lib/python2.' + str(sv[1]) + '/dist-packages', '/usr/lib/python2.' + str(sv[1]) + '/dist-packages/rtctree/rtmidl']
+    sys.path += [home+'/OOoRTC', '/usr/lib/python2.' + str(sv[1]) + '/dist-packages']
 elif os.name == 'nt':
-    sys.path += ['.\\OOoRTC', 'C:\\Python2' + str(sv[1]) + '\\lib\\site-packages', 'C:\\Python2' + str(sv[1]) + '\\Lib\\site-packages\\OpenRTM_aist\\RTM_IDL', 'C:\\Python2' + str(sv[1]) + '\\lib\\site-packages\\rtctree\\rtmidl']
+    sys.path += ['.\\OOoRTC', 'C:\\Python2' + str(sv[1]) + '\\lib\\site-packages', 'C:\\Python2' + str(sv[1]) + '\\Lib\\site-packages\\OpenRTM_aist\\RTM_IDL']
 
     
     
@@ -37,7 +38,7 @@ from OpenRTM_aist import RTObject
 from OpenRTM_aist import CorbaConsumer
 from omniORB import CORBA
 import CosNaming
-from rtctree.utils import build_attr_string, dict_to_nvlist, nvlist_to_dict
+
 import threading
 
 import OOoRTC
@@ -273,8 +274,10 @@ def GetDataType(m_port):
     m_value = DataType.Value
     
     profile = m_port.get_port_profile()
-    props = nvlist_to_dict(profile.properties)
-    data_type =  props['dataport.data_type']
+    
+    #props = nvlist_to_dict(profile.properties)
+    #data_type =  props['dataport.data_type']
+    data_type = OOoRTC.nvlist_getValue(profile.properties,'dataport.data_type')
     if data_type.startswith('IDL:'):
         data_type = data_type[4:]
     colon = data_type.rfind(':')

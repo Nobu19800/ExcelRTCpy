@@ -3,6 +3,7 @@
 ##
 #
 # @file OOoRTC.py
+# @brief RTCの検索等オフィスソフトを操作するRTC全般に使用する関数
 
 import optparse
 import sys,os,platform
@@ -14,9 +15,9 @@ sv = sys.version_info
 
 
 if os.name == 'posix':
-    sys.path += ['/usr/lib/python2.' + str(sv[1]) + '/dist-packages', '/usr/lib/python2.' + str(sv[1]) + '/dist-packages/rtctree/rtmidl']
+    sys.path += ['/usr/lib/python2.' + str(sv[1]) + '/dist-packages']
 elif os.name == 'nt':
-    sys.path += ['C:\\Python2' + str(sv[1]) + '\\lib\\site-packages', 'C:\\Python2' + str(sv[1]) + '\\Lib\\site-packages\\OpenRTM_aist\\RTM_IDL', 'C:\\Python2' + str(sv[1]) + '\\lib\\site-packages\\rtctree\\rtmidl']
+    sys.path += ['C:\\Python2' + str(sv[1]) + '\\lib\\site-packages', 'C:\\Python2' + str(sv[1]) + '\\Lib\\site-packages\\OpenRTM_aist\\RTM_IDL']
     
     
     
@@ -36,7 +37,7 @@ from OpenRTM_aist import RTObject
 from OpenRTM_aist import CorbaConsumer
 from omniORB import CORBA
 import CosNaming
-from rtctree.utils import build_attr_string, dict_to_nvlist, nvlist_to_dict
+
 
 
 
@@ -131,6 +132,20 @@ def ConnectPort(obj1, obj2, c_name):
     ret = obj2.connect(conprof)
 
 
+##
+# @brief namevalueリストから指定したキーの値を取得
+# @param nvlist namevalueリスト
+# @param name 名前
+# @return 値
+#
+def nvlist_getValue(nvlist, name):
+    
+    for item in nvlist:
+        if name == item.name:
+            return item.value.value()
+    
+    return None
+
 
 ##
 # @brief 各RTCのパスを取得する関数
@@ -190,7 +205,7 @@ def ListRecursive(context, rtclist, name, oParent, oTreeDataModel):
                         for p in pin:
                             name_buff2 = name_buff[:]
                             profile = p.get_port_profile()
-                            props = nvlist_to_dict(profile.properties)
+                            #props = nvlist_to_dict(profile.properties)
                             tp_n = profile.name.split('.')[1]
                             name_buff2.append(tp_n)
                             if oTreeDataModel == None:
@@ -231,17 +246,20 @@ def rtc_get_rtclist(naming, rtclist, name, oParent, oTreeDataModel):
 # @brief ネーミングサービスへ接続する関数
 # @param s_name ネームサーバーの名前
 # @param orb ORBオブジェクト
+# @param w_code 文字コード名
 # @return ネーミングコンテキスト
-def SetNamingServer(s_name, orb, MyMsgBox = None):
+def SetNamingServer(s_name, orb, MyMsgBox = None, w_code = 'utf-8'):
     
     try:
         namingserver = CorbaNaming(orb, s_name)
     except:
         if MyMsgBox != None:
-            MyMsgBox(SetCoding('エラー','utf-8'),SetCoding('ネーミングサービスへの接続に失敗しました','utf-8'))
+            if w_code == "Unicode":
+                MyMsgBox(u'エラー',u'ネーミングサービスへの接続に失敗しました')
+            else:
+                MyMsgBox(SetCoding('エラー',w_code),SetCoding('ネーミングサービスへの接続に失敗しました','utf-8'))
         return None
     return namingserver
-
 ##
 # @brief ツリーで選択したアイテムがポートかどうか判定する関数
 # @param objectTree ダイアログのツリー

@@ -3,6 +3,7 @@
 ##
 #
 # @file MainWindow.py
+# @brief ExcelRTCの操作GUIのメインウインドウ
 
 from PyQt4 import QtCore, QtGui
 import OOoRTC
@@ -26,7 +27,7 @@ from OpenRTM_aist import RTObject
 from OpenRTM_aist import CorbaConsumer
 from omniORB import CORBA
 import CosNaming
-from rtctree.utils import build_attr_string, dict_to_nvlist, nvlist_to_dict
+
 
 import threading
 
@@ -574,16 +575,15 @@ class MainWindow(QtGui.QMainWindow):
                     if p[0] == m_name:
                         F_Name = p[0][-2] + p[0][-1]
                         profile = p[1].get_port_profile()
-                        props = nvlist_to_dict(profile.properties)
+                        #props = nvlist_to_dict(profile.properties)
 
                         
 
                         row,col,mlen,sn,mstate,t_attachports = self.loadParam(count)
-                                
                         
-                        if props['port.port_type'] == 'DataInPort':
+                        if OOoRTC.nvlist_getValue(profile.properties,'port.port_type') == 'DataInPort':
                             self.rtc.mAddOutPort(F_Name, p, row, col, mlen, sn, mstate, t_attachports)
-                        elif props['port.port_type'] == 'DataOutPort':
+                        elif OOoRTC.nvlist_getValue(profile.properties,'port.port_type') == 'DataOutPort':
                             self.rtc.mAddInPort(F_Name, p, row, col, mlen, sn, mstate, t_attachports)            
     
             count = count + 1
@@ -699,11 +699,11 @@ class MainWindow(QtGui.QMainWindow):
                 
             F_Name = t_comp[0][-2] + t_comp[0][-1]
             profile = t_comp[1].get_port_profile()
-            props = nvlist_to_dict(profile.properties)
+            #props = nvlist_to_dict(profile.properties)
 
-            if props['port.port_type'] == 'DataInPort':
+            if OOoRTC.nvlist_getValue(profile.properties,'port.port_type') == 'DataInPort':
                 self.compAddOutPort(F_Name, t_comp)
-            elif props['port.port_type'] == 'DataOutPort':
+            elif OOoRTC.nvlist_getValue(profile.properties,'port.port_type') == 'DataOutPort':
                 self.compAddInPort(F_Name, t_comp)
 
             
@@ -997,7 +997,10 @@ class MainWindow(QtGui.QMainWindow):
                 self.sheetcomboBox.setCurrentIndex(1)
             address = str(self.namingServertextBox.text())
             orb = self.mgr._orb
-            namingserver = OOoRTC.SetNamingServer(address, orb, self.massageBoxFunc)
+            namingserver = OOoRTC.SetNamingServer(address, orb, self.massageBoxFunc, "Unicode")
+            if namingserver == None:
+                return
+            print namingserver
             tmp = QtGui.QTreeWidgetItem(["/"])
             self.treeWidget.addTopLevelItem(tmp)
             root = TreeNode(tmp, self)

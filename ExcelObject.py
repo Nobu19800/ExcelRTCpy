@@ -2,8 +2,8 @@
 # -*- encoding: utf-8 -*-
 
 ##
-#   @file ExcelRTC.py
-#   @brief ExcelControl Component
+#   @file ExcelObject.py
+# @brief Excelを操作するためのクラス、関数
 
 import win32com
 import pythoncom
