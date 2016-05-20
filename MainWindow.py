@@ -1000,7 +1000,7 @@ class MainWindow(QtGui.QMainWindow):
             namingserver = OOoRTC.SetNamingServer(address, orb, self.massageBoxFunc, "Unicode")
             if namingserver == None:
                 return
-            print namingserver
+            #print namingserver
             tmp = QtGui.QTreeWidgetItem(["/"])
             self.treeWidget.addTopLevelItem(tmp)
             root = TreeNode(tmp, self)

@@ -293,8 +293,8 @@ class ExcelInPort(CalcDataPort.CalcInPort, ExcelPortObject):
         
         cell, sheet, m_len = self.getCell(m_cal)
         if cell != None:
-
-          if self._dataType[2] == m_string:
+          cell.Value2 = b
+          """if self._dataType[2] == m_string:
             cell.Value2 = b
           elif self._dataType[2] == m_value:
             if self.state:
@@ -326,7 +326,7 @@ class ExcelInPort(CalcDataPort.CalcInPort, ExcelPortObject):
             self.count += 1
 
           if self.state:
-            self._num = self._num + 1
+            self._num = self._num + 1"""
         
                     
 ##
@@ -383,8 +383,8 @@ class ExcelInPortSeq(CalcDataPort.CalcInPortSeq, ExcelPortObject):
           for j in range(0, len(b)):
             if m_len > j:
               v.append(b[j])
-
-          if self._dataType[2] == m_string:
+          cell.Value2 = v
+          """if self._dataType[2] == m_string:
               cell.Value2 = v
 
               
@@ -439,7 +439,7 @@ class ExcelInPortSeq(CalcDataPort.CalcInPortSeq, ExcelPortObject):
             self.count += 1
             
           if self.state:
-            self._num = self._num + 1
+            self._num = self._num + 1"""
               
           
           
