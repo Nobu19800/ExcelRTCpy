@@ -285,6 +285,7 @@ class ExcelInPort(CalcDataPort.CalcInPort, ExcelPortObject):
     ##
     # @brief 
     # @param self 
+    # @param self 
     # @param cell セルオブジェクト
     # @param b データ
     def updateIn(self, b, m_cal):
@@ -323,10 +324,10 @@ class ExcelInPort(CalcDataPort.CalcInPort, ExcelPortObject):
               cellf.Value2 = fb
               
             cell.Value2 = b
-            self.count += 1
+            self.count += 1"""
 
           if self.state:
-            self._num = self._num + 1"""
+            self._num = self._num + 1
         
                     
 ##
@@ -436,10 +437,10 @@ class ExcelInPortSeq(CalcDataPort.CalcInPortSeq, ExcelPortObject):
                 cellf.Value2 = fb
                   
             cell.Value2 = v
-            self.count += 1
+            self.count += 1"""
             
           if self.state:
-            self._num = self._num + 1"""
+            self._num = self._num + 1
               
           
           
